@@ -8,5 +8,9 @@
 #include "codec.h"
 
 
-codec::codec(std::istream &in, std::ostream &out): i(in), o(out){}
+codec::codec(std::istream &in, std::ostream &out):
+	i(in),
+	o(out)
+{
+}
 
