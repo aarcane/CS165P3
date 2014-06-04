@@ -2,7 +2,7 @@ CXX=clang++
 CC=clang
 LD=clang++
 CXXFLAGS=$(CFLAGS) -std=c++11
-CFLAGS=-Wall -Werror -Wextra -g
+CFLAGS=-Wall -Wextra -Werror -g #-O3 -Werror -funroll-loops -fomit-frame-pointer -pipe -march=native -g
 LDFLAGS=-g
 RM=rm -f
 LN=ln -f
@@ -11,9 +11,9 @@ VPATH=src
 OBJDIR=build
 .PHONY=clean
 
-CXXSOURCES=main.cpp huff.cpp lz1.cpp lz2.cpp codec.cpp tempFile.cpp
+CXXSOURCES=main.cpp huff.cpp codec.cpp tempFile.cpp lz.cpp
 CSOURCES=
-HEADERS=huff.h lz1.h lz2.h codec.h tempFile.h circularCounter.h
+HEADERS=huff.h lz1.h lz2.h codec.h tempFile.h circularCounter.h lz.h
 
 CXXOBJECTS=$(CXXSOURCES:.cpp=.o)
 COBJECTS=$(CSOURCES:.c=.o)

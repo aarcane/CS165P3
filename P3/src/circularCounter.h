@@ -21,6 +21,7 @@ public:
 	void operator++(int){i = (i+j)%mod;};
 	T operator*(){return i+offset;};
 	T operator()(void){return i+offset;};
+	void reset(){i = 0;};
 };
 
 
