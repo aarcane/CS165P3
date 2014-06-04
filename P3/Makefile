@@ -1,8 +1,8 @@
-CXX=clang++
-CC=clang
-LD=clang++
+CXX=g++
+CC=gcc
+LD=g++
 CXXFLAGS=$(CFLAGS) -std=c++11
-CFLAGS=-Wall -Wextra -Werror -g #-O3 -Werror -funroll-loops -fomit-frame-pointer -pipe -march=native -g
+CFLAGS=-Wall -Wextra -O3 -Werror -funroll-loops -fomit-frame-pointer -pipe -march=native #-g
 LDFLAGS=-g
 RM=rm -f
 LN=ln -f

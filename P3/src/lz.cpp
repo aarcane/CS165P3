@@ -25,10 +25,10 @@ class token
 	virtual std::vector<bool> getVector(void)
 	{	std::vector<bool> ret;
 		ret.resize(4,false);
-		ret[0] = s-1 & bits[4];
-		ret[1] = s-1 & bits[5];
-		ret[2] = s-1 & bits[6];
-		ret[3] = s-1 & bits[7];
+		ret[0] = (s-1) & bits[4];
+		ret[1] = (s-1) & bits[5];
+		ret[2] = (s-1) & bits[6];
+		ret[3] = (s-1) & bits[7];
 		return ret;
 	};
 };
@@ -207,21 +207,106 @@ void dumpTokens(std::vector<token*>& tok, size_t N, size_t M, size_t F, std::vec
 	if(flush) printVectorBool(o, out, 0);
 }
 
+token* readToken( std::istream& i, std::vector<bool>& in);
+
 void lz::decompress(void)
-{	(void)0;
+{	std::vector<bool> in;
+	std::vector<unsigned char> buffer;
+	size_t current = 0;
+	size_t lastWrite = 0;
+	buffer.resize(2*N);
+	token * T = nullptr;
+	tokenSequence * S = nullptr;
+	tokenOffset * O = nullptr;
+	while((T = readToken(i, in)))
+	{	if((S = dynamic_cast<tokenSequence*>(T)))
+		{	std::cerr << "Sequence of length " << S->ch.size() << ": " << S->ch << std::endl;
+			for(size_t i = 0; i < S->ch.size(); ++i) buffer[(current+i)%(2*N)] = S->ch[i];
+			current += S->ch.size();
+		}
+		if((O = dynamic_cast<tokenOffset*>(T)))
+		{	for(size_t i = 0; i < O->s; ++i) buffer[(current+i)%(2*N)] = buffer[((current-(O->o))+i)%(2*N)];
+			current += O->s;
+		}
+		if((lastWrite + N) < current)
+		{	o.write(reinterpret_cast<char*>(buffer.data())+(lastWrite%(2*N)), N);
+			lastWrite += N;
+		}
+		T = nullptr;
+		S = nullptr;
+		O = nullptr;
+		std::cerr << "At position: " << current << std::endl;
+	}
+	if(lastWrite < current)
+	{	o.write(reinterpret_cast<char*>(buffer.data())+(lastWrite%(2*N)), (current - lastWrite));
+	}
+	o.flush();
+}
+
+unsigned char readCode(std::vector<bool>);
+
+token* readToken( std::istream& i, std::vector<bool>& in)
+{	if(in.size() < 136) /* 4*4*136 */ readVectorBool(i, in, 8192);
+	token* ret = nullptr;
+	std::vector<bool> test;
+	unsigned char c, p;
+	test.resize(4);
+	in >> test;
+	c = readCode(test);
+	if(c == 0) // Sequence
+	{	in >> test;
+		p = readCode(test);
+		if(in.size() < (p * 8)) return ret;
+		std::vector<unsigned char> ch;
+		ch.resize(p);
+		in >> ch;
+		ret = new tokenSequence(ch);
+	}
+	else
+	{	c += 1;
+		unsigned pos = 0;
+		bool t;
+		if(in.size() < tokenOffset::M) return ret;
+		if(tokenOffset::M == 12)
+		{	in >> t;
+			if(t) pos |= 1 << 11;
+		}
+		in >> t;
+		if(t) pos |= 1 << 10;
+		in >> t;
+		if(t) pos |= 1 << 9;
+		in >> t;
+		if(t) pos |= 1 << 8;
+		in >> test;
+		p = readCode(test);
+		pos |= (unsigned(p) << 4);
+		in >> test;
+		p = readCode(test);
+		pos |= (unsigned(p) << 0);
+		ret = new tokenOffset(c, p);
+	}
+	return ret;
+}
+
+unsigned char readCode(std::vector<bool> code)
+{	unsigned char ret = 0;
+	if(code.size() == 4)
+	{	if(code[0]) ret |= bits[4];
+		if(code[1]) ret |= bits[5];
+		if(code[2]) ret |= bits[6];
+		if(code[3]) ret |= bits[7];
+	}
+	return ret;
 }
 
 void lz::pushInv(unsigned char c)
 {	for(size_t i = 0; i < 16; ++i)
 	{	inv[i].push_back(c);
 		if(inv[i].size() > i+1) inv[i].erase(inv[i].begin());
-		//std::cerr << inv[i] << std::endl;
 }	}
 
 void lz::pushMap(size_t pos)
-{	for(size_t i = 1; i < 16; ++i)
-	{	if(i <= pos) posMap.insert(std::pair<std::vector<unsigned char>, size_t>(inv[i], pos-i));
-	}
+{	for(size_t i = 1; i < 16; ++i) if(i <= pos) posMap.insert(std::pair<std::vector<unsigned char>, size_t>(inv[i], pos-i));
 }
 
 size_t lz::HighOrderBit(size_t t) // O(1).  Always takes at most 64 passes.

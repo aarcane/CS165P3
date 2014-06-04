@@ -31,6 +31,31 @@ std::vector<bool>& operator<< (std::vector<bool>& o, std::vector<bool>& v)
 	return o;
 }
 
+std::vector<bool>& operator>> (std::vector<bool>& i, bool& v)
+{	v = i.front();
+	i.erase(i.begin());
+	return i;
+}
+
+std::vector<bool>& operator>> (std::vector<bool>& i, std::vector<bool>& v)
+{	size_t count = std::min(i.size(), v.size());
+	for(size_t j = 0; j < count; ++j) v[j] = i[j];
+	v.resize(count);
+	i.erase(i.begin(), i.begin()+count);
+	return i;
+}
+
+std::vector<bool>& operator>> (std::vector<bool>& i, unsigned char& vs)
+{	//for(unsigned char c: bits) i.push_back((vs&c));
+	for(size_t j = 0; j < 8; ++j) if(i[j]) vs |= bits[j];
+	return i;
+}
+std::vector<bool>& operator>> (std::vector<bool>& i, std::vector<unsigned char>& cs)
+{	for(unsigned char c : cs) i >> c;
+	return i;
+}
+
+
 std::vector<bool>& operator<< (std::vector<bool>& o, std::vector<unsigned char>& cs)
 {	for(const unsigned char c : cs) o << c;
 	return o;

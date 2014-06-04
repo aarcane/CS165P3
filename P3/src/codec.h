@@ -34,6 +34,12 @@ std::vector<bool>& operator<< (std::vector<bool>& o, const char& vs);
 std::vector<bool>& operator<< (std::vector<bool>& o, std::vector<bool>& v);
 std::vector<bool>& operator<< (std::vector<bool>& o, std::vector<unsigned char>& cs);
 
+std::vector<bool>& operator>> (std::vector<bool>& i, bool& v);
+std::vector<bool>& operator>> (std::vector<bool>& i, std::vector<bool>& v);
+std::vector<bool>& operator>> (std::vector<bool>& i, unsigned char& vs);
+std::vector<bool>& operator>> (std::vector<bool>& i, std::vector<unsigned char>& cs);
+
+
 std::vector<unsigned char>& operator<< (std::vector<unsigned char>& o, const unsigned char& vs);
 std::vector<unsigned char>& operator<< (std::vector<unsigned char>& o, std::vector<unsigned char>& cs);
 
